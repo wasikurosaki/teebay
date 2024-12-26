@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int            @id @default(autoincrement())
+  firstName       String
+  lastName        String
+  email           String         @unique
+  password        String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  products        Product[]      @relation("UserProducts") // One-to-many relation with Product
+  transactions    Transaction[]  // One-to-many relation with Transaction
+  buyTransactions Transaction[]  @relation("BuyTransactions") // Reverse relation for transactions where user is the buyer
+  rentTransactions Transaction[] @relation("RentTransactions") // Reverse relation for transactions where user is the renter
+}
+
+model Product {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  userId      Int
+  user        User         @relation("UserProducts", fields: [userId], references: [id])
+  categories  Category[]   @relation("ProductCategories")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  transactions Transaction[] // One-to-many relation with Transaction
+}
+
+enum CategoryType {
+  ELECTRONICS
+  FURNITURE
+  HOME_APPLIANCES
+  SPORTING_GOODS
+  OUTDOOR
+  TOYS
+}
+
+model Category {
+  id          Int          @id @default(autoincrement())
+  name        CategoryType @unique // Use the enum here
+  products    Product[]    @relation("ProductCategories")
+}
+
+model Transaction {
+  id          Int          @id @default(autoincrement())
+  type        String       // buy, sell, rent, lend
+  productId   Int
+  product     Product      @relation(fields: [productId], references: [id])
+  
+  buyerId     Int?
+  buyer       User?        @relation("BuyTransactions", fields: [buyerId], references: [id])
+  
+  renterId    Int?
+  renter      User?        @relation("RentTransactions", fields: [renterId], references: [id])
+  
+  userId      Int          // Added the userId field to reference the User
+  user        User         @relation(fields: [userId], references: [id]) // Reverse relation for User's transactions
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
