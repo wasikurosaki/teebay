@@ -12,6 +12,7 @@ model User {
   firstName       String
   lastName        String
   email           String         @unique
+  address         String
   password        String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -20,6 +21,11 @@ model User {
   transactions    Transaction[]  // One-to-many relation with Transaction
   buyTransactions Transaction[]  @relation("BuyTransactions") // Reverse relation for transactions where user is the buyer
   rentTransactions Transaction[] @relation("RentTransactions") // Reverse relation for transactions where user is the renter
+}
+enum ProductStatus {
+  ACTIVE
+  SOLD
+  RENTED
 }
 
 model Product {
