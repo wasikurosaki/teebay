@@ -1,140 +1,59 @@
-const productModel = require("../models/product");
-const userModel = require("../models/user");
+const { Product } = require("../models/product"); // Assuming Sequelize ORM
 
-// Create Product Controller
-const createProduct = async (req, res) => {
-  const { title, description, price, categories } = req.body;
-  const userId = req.user.id; // Assuming user is authenticated and user ID is in the request
+// Controller for creating a product
+const createProduct = async (args) => {
+  const { title, description, price, category } = args;
 
-  try {
-    // Create the product in the database
-    const product = await productModel.createProduct(
-      title,
-      description,
-      price,
-      categories,
-      userId
-    );
-    res.status(201).json({
-      message: "Product created successfully",
-      product,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+  // Create a new product in the database
+  const product = await Product.create({
+    title,
+    description,
+    price,
+    category: JSON.stringify(category), // Store categories as a JSON array
+  });
+
+  return product;
+};
+
+// Controller for buying a product
+const buyProduct = async (args) => {
+  const { productId, userId } = args;
+
+  // Find the product by ID
+  const product = await Product.findByPk(productId);
+  if (!product) {
+    throw new Error("Product not found");
   }
+
+  // Update the product's status to 'sold'
+  product.status = "sold";
+  await product.save();
+
+  // Optionally, associate the product with the user who bought it (if needed)
+  // Example: product.userId = userId;
+
+  return product;
 };
 
-// Edit Product Controller
-const editProduct = async (req, res) => {
-  const { title, description, price, categories } = req.body;
-  const { productId } = req.params; // Get the product ID from the URL
+// Controller for renting a product
+const rentProduct = async (args) => {
+  const { productId, userId } = args;
 
-  try {
-    // Get the existing product
-    const product = await productModel.getProductById(Number(productId));
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    // Update the product
-    const updatedProduct = await productModel.updateProduct(
-      Number(productId),
-      title,
-      description,
-      price,
-      categories
-    );
-
-    res.status(200).json({
-      message: "Product updated successfully",
-      updatedProduct,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+  // Find the product by ID
+  const product = await Product.findByPk(productId);
+  if (!product) {
+    throw new Error("Product not found");
   }
+
+  // Update the product's status to 'rented'
+  product.status = "rented";
+  await product.save();
+
+  // Optionally, associate the product with the user who rented it (if needed)
+  // Example: product.userId = userId;
+
+  return product;
 };
 
-// Buy Product Controller
-const buyProduct = async (req, res) => {
-  const { productId } = req.params;
-  const userId = req.user.id; // Assuming the user is authenticated
-
-  try {
-    // Get the product
-    const product = await productModel.getProductById(Number(productId));
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    if (product.status === "SOLD") {
-      return res.status(400).json({ message: "Product is already sold" });
-    }
-
-    // Mark the product as sold
-    await productModel.markProductAsSold(Number(productId));
-
-    // Create a transaction record
-    const transaction = await prisma.transaction.create({
-      data: {
-        type: "buy",
-        productId: Number(productId),
-        buyerId: userId,
-      },
-    });
-
-    res.status(200).json({
-      message: "Product bought successfully",
-      transaction,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-// Rent Product Controller
-const rentProduct = async (req, res) => {
-  const { productId } = req.params;
-  const userId = req.user.id; // Assuming the user is authenticated
-
-  try {
-    // Get the product
-    const product = await productModel.getProductById(Number(productId));
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    if (product.status === "RENTED") {
-      return res.status(400).json({ message: "Product is already rented" });
-    }
-
-    // Mark the product as rented
-    await productModel.markProductAsRented(Number(productId));
-
-    // Create a transaction record for renting
-    const transaction = await prisma.transaction.create({
-      data: {
-        type: "rent",
-        productId: Number(productId),
-        renterId: userId,
-      },
-    });
-
-    res.status(200).json({
-      message: "Product rented successfully",
-      transaction,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-module.exports = {
-  createProduct,
-  editProduct,
-  buyProduct,
-  rentProduct,
-};
+// Export the functions
+module.exports = { createProduct, buyProduct, rentProduct };

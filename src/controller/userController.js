@@ -1,84 +1,74 @@
-const bcrypt = require("bcrypt");
+const prisma = require("../prismaClient");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const userModel = require("../models/user");
+const { User } = require("../models/user"); // Assuming you're using Sequelize ORM, adjust accordingly.
 
-// Signup Controller
-const signup = async (req, res) => {
-  const { firstName, lastName, email, password, address } = req.body;
+// Signup controller for GraphQL
 
+const createUser = async (firstName, lastName, email, password, address) => {
   try {
-    // Check if user already exists
-    const userExists = await userModel.findUserByEmail(email);
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await userModel.createUser(
-      firstName,
-      lastName,
-      email,
-      hashedPassword,
-      address
-    );
-
-    // Generate JWT Token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    res.status(201).json({
-      message: "User created successfully",
-      token,
-      user,
+    const user = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password, // You may want to hash the password before storing it
+        address,
+      },
     });
+    return user;
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-// Login Controller
-const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Find user by email
-    const user = await userModel.findUserByEmail(email);
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // Generate JWT Token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    res.status(200).json({
-      message: "Login successful",
-      token,
-      user,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error creating user:", error);
+    throw new Error("Unable to create user");
   }
 };
 
 module.exports = {
-  signup,
-  login,
+  createUser,
 };
+
+const updateUser = async (userId, firstName, lastName, email, address) => {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName,
+        lastName,
+        email,
+        address,
+      },
+    });
+    return updatedUser;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw new Error("Unable to update user");
+  }
+};
+
+// Login controller for GraphQL
+const login = async (args) => {
+  const { email, password } = args;
+
+  // Find the user by email
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Compare the password
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw new Error("Invalid password");
+  }
+
+  // Generate JWT token
+  const token = jwt.sign(
+    { userId: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+
+  return token; // Returning the JWT token
+};
+
+module.exports = { createUser, login, updateUser };

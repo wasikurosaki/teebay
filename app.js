@@ -1,44 +1,18 @@
-// Import necessary dependencies
 const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const bodyParser = require("body-parser");
-const userRoutes = require("./src/routes/userRoutes");
-const productRoutes = require("./src/routes/productRoutes");
-const authenticate = require("./src/utils/auth");
-
-// Load environment variables
-dotenv.config();
-
-// Initialize the app
+const { graphqlHTTP } = require("express-graphql"); // Import express-graphql middleware
+const schema = require("./src/schema/schema"); // Assuming schema is exported from a schema.js file
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json()); // Parse incoming JSON requests
-
-// Connect to database (optional, if you need to connect to DB explicitly)
-// You can configure this connection based on your setup, like Prisma or Sequelize
-
-// Routes
-app.use("/api/user", userRoutes); // User-related routes (signup, login)
-app.use("/api/product", authenticate, productRoutes); // Product-related routes (CRUD) with authentication
-
-// Root route for health check
-app.get("/", (req, res) => {
-  res.send("Server is running");
-});
-
-// Error handling middleware (optional)
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong" });
-});
-
-// Set the server port
-const PORT = 3000 || 4000;
+// Use the express-graphql middleware for handling GraphQL queries
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema, // Pass the schema created in your schema.js file
+    graphiql: true, // Set to true to enable GraphiQL interface in browser (optional)
+  })
+);
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log("Server is running on http://localhost:3000");
 });

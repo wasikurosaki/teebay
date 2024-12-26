@@ -1,7 +1,8 @@
 const prisma = require("../prismaClient"); // Import Prisma Client instance
 
-// Function to create a new user
-const createUser = async (firstName, lastName, email, password, address) => {
+// Function to create a new user (for GraphQL mutation)
+const createUser = async (args) => {
+  const { firstName, lastName, email, password, address } = args;
   try {
     const user = await prisma.user.create({
       data: {
@@ -19,7 +20,7 @@ const createUser = async (firstName, lastName, email, password, address) => {
   }
 };
 
-// Function to find a user by email
+// Function to find a user by email (for GraphQL query)
 const findUserByEmail = async (email) => {
   try {
     const user = await prisma.user.findUnique({
@@ -32,8 +33,9 @@ const findUserByEmail = async (email) => {
   }
 };
 
-// Function to update user details
-const updateUser = async (userId, firstName, lastName, email, address) => {
+// Function to update user details (for GraphQL mutation)
+const updateUser = async (args) => {
+  const { userId, firstName, lastName, email, address } = args;
   try {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -51,8 +53,28 @@ const updateUser = async (userId, firstName, lastName, email, address) => {
   }
 };
 
+// Function to authenticate user for login (for GraphQL query)
+const authenticateUser = async (args) => {
+  const { email, password } = args;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user || user.password !== password) {
+      throw new Error("Invalid credentials");
+    }
+
+    return user; // Return authenticated user
+  } catch (error) {
+    console.error("Error authenticating user:", error);
+    throw new Error("Authentication failed");
+  }
+};
+
 module.exports = {
   createUser,
   findUserByEmail,
   updateUser,
+  authenticateUser,
 };

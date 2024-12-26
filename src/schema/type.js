@@ -1,0 +1,46 @@
+const {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLList,
+} = require("graphql");
+
+// Define the CategoryType (assuming you have a category model)
+const CategoryType = new GraphQLObjectType({
+  name: "Category",
+  fields: () => ({
+    id: { type: GraphQLInt },
+    name: { type: GraphQLString },
+  }),
+});
+
+// Define the UserType
+const UserType = new GraphQLObjectType({
+  name: "User",
+  fields: () => ({
+    id: { type: GraphQLInt },
+    firstName: { type: GraphQLString },
+    lastName: { type: GraphQLString },
+    email: { type: GraphQLString },
+    address: { type: GraphQLString },
+    products: { type: new GraphQLList(ProductType) }, // List of products associated with the user
+  }),
+});
+
+// Define the ProductType
+const ProductType = new GraphQLObjectType({
+  name: "Product",
+  fields: () => ({
+    id: { type: GraphQLInt },
+    title: { type: GraphQLString },
+    description: { type: GraphQLString },
+    price: { type: GraphQLFloat },
+    categories: { type: new GraphQLList(CategoryType) }, // List of categories associated with the product
+    user: { type: UserType }, // User who created the product
+    status: { type: GraphQLString }, // Product status (e.g., SOLD, RENTED, etc.)
+  }),
+});
+
+// Export both types
+module.exports = { ProductType, UserType, CategoryType };
