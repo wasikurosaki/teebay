@@ -2,7 +2,7 @@ const prisma = require("../prismaClient"); // Import Prisma Client instance
 
 // Create a new product (for GraphQL mutation)
 const createProduct = async (args) => {
-  const { title, description, price, categories, userId } = args;
+  const { name, description, price, categories, userId } = args;
 
   try {
     // First, verify that all categories exist
@@ -20,7 +20,7 @@ const createProduct = async (args) => {
 
     const product = await prisma.product.create({
       data: {
-        name: title, // Changed from 'title' to 'name' to match schema
+        name, // Changed from 'title' to 'name' to match schema
         description,
         price,
         categories: {
@@ -71,12 +71,12 @@ const getUserProducts = async (userId) => {
 
 // Update product details (for GraphQL mutation)
 const updateProduct = async (args) => {
-  const { id, title, description, price, categories } = args;
+  const { id, name, description, price, categories } = args;
   try {
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
-        title,
+        name,
         description,
         price,
         categories: {

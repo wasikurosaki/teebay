@@ -33,7 +33,7 @@ const ProductType = new GraphQLObjectType({
   name: "Product",
   fields: () => ({
     id: { type: GraphQLInt },
-    title: { type: GraphQLString },
+    name: { type: GraphQLString },
     description: { type: GraphQLString },
     price: { type: GraphQLFloat },
     categories: { type: new GraphQLList(GraphQLInt) }, // Categories should be an array

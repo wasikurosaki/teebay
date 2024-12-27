@@ -30,9 +30,19 @@ const RootQuery = new GraphQLObjectType({
     products: {
       type: new GraphQLList(ProductType),
       resolve: async () => {
-        return await prisma.product.findMany(); // Fetch all products
+        const products = await prisma.product.findMany({
+          include: {
+            categories: true, // Include categories for each product
+          },
+        });
+
+        return products.map((product) => ({
+          ...product,
+          categories: product.categories.map((cat) => cat.id), // Return only category IDs
+        }));
       },
     },
+
     product: {
       type: ProductType,
       args: { id: { type: GraphQLInt } },
@@ -59,7 +69,11 @@ const Mutation = new GraphQLObjectType({
         categories: { type: new GraphQLList(GraphQLInt) }, // Array of category IDs
         userId: { type: GraphQLInt }, // User ID who owns the product
       },
-      resolve: (parent, args) => createProduct(args), // Handle product creation
+
+      resolve: (parent, args) => {
+        console.log("Received data in resolver:", args); // Log received data
+        return createProduct(args); // Handle product creation
+      }, // Handle product creation
     },
 
     updateProduct: {

@@ -11,31 +11,54 @@ const createProduct = async ({
   userId,
 }) => {
   try {
+    // Check if categories exist
+    const existingCategories = await prisma.category.findMany({
+      where: {
+        id: {
+          in: categories,
+        },
+      },
+    });
+
+    if (existingCategories.length !== categories.length) {
+      throw new Error("One or more categories not found");
+    }
+
+    console.log("Product Data:", {
+      name,
+      description,
+      price,
+      userId,
+      categories,
+    });
+
     const product = await prisma.product.create({
       data: {
-        name, // Map the title to the 'name' field in the Prisma model
+        name, // Map 'name' from the GraphQL mutation
         description,
         price,
         userId,
         categories: {
-          connect: categories.map((id) => ({ id })), // Map categories to {id: value} format
+          connect: categories.map((categoryId) => ({ id: categoryId })),
         },
       },
       include: {
-        categories: true, // Ensure categories are returned in the response
+        categories: true, // Include categories in the response
       },
     });
-    console.log(product);
+
+    console.log("Created Product:", product);
+
     return {
       id: product.id,
-      name: product.name, // Map 'name' back to 'title' for GraphQL response
+      name: product.name, // Ensure you return 'name'
       description: product.description,
       price: product.price,
-      categories: product.categories.map((cat) => cat.id), // Return category IDs
+      categories: product.categories.map((cat) => cat.id), // Map categories to IDs
     };
   } catch (error) {
     console.error("Error creating product:", error);
-    throw new Error("Unable to create product");
+    throw new Error(`Unable to create product: ${error.message}`);
   }
 };
 
@@ -155,8 +178,24 @@ const deleteProduct = async (id) => {
     throw new Error("Unable to delete product");
   }
 };
+
+const getAllProducts = async (req, res) => {
+  try {
+    const products = await prisma.product.findMany(); // Fetch all products from the database
+    return res.status(200).json({ success: true, data: products });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching products.",
+      error: error.message,
+    });
+  }
+};
+
 // Export the functions
 module.exports = {
+  getAllProducts,
   createProduct,
   buyProduct,
   rentProduct,
