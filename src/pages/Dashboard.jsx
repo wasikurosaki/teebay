@@ -21,21 +21,20 @@ const Dashboard = () => {
   if (error) return <p>Error: {error.message}</p>;
   console.log(data);
   return (
-    <div className="bg-gray-100 min-h-screen p-8">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+    <div className="flex flex-col w-full bg-gray-100 h-auto p-8">
       <button
         onClick={() => {
           localStorage.removeItem("authToken");
           navigate("/login");
         }}
-        className="bg-red-500 text-white px-4 py-2 rounded mb-4"
+        className="fixed bg-red-500 text-white px-4 py-2 rounded mb-4 right-8 "
       >
         Logout
       </button>
 
       {/* Display All Products */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold">All Products</h2>
+        <h2 className="text-xl font-semibold text-center">My Products</h2>
         {data?.products?.length === 0 ? (
           <p>No products found</p>
         ) : (
@@ -43,17 +42,20 @@ const Dashboard = () => {
             {data.products.map((product) => (
               <li
                 key={product.id}
-                className="p-4 border rounded shadow-sm mb-2 bg-white"
+                className="p-4  rounded shadow-sm mb-2 border-[2px] mx-96 h-auto py-10 flex flex-col gap-8 "
               >
                 <h3 className="font-bold">{product?.name}</h3>
-                <p>{product.description}</p>
-                <p>${product.price.toFixed(2)}</p>
                 <p>Categories: {product.categories?.join(", ")}</p>
+                <p>Price: ${product.price.toFixed(2)}</p>
+                <p>{product.description}</p>
               </li>
             ))}
           </ul>
         )}
       </div>
+      <button className="fixed bg-blue-500 text-white px-4 py-2 rounded mb-4 right-8 top-[800px] ">
+        Add Product
+      </button>
     </div>
   );
 };
