@@ -36,9 +36,8 @@ const ProductType = new GraphQLObjectType({
     title: { type: GraphQLString },
     description: { type: GraphQLString },
     price: { type: GraphQLFloat },
-    categories: { type: new GraphQLList(CategoryType) }, // List of categories associated with the product
-    user: { type: UserType }, // User who created the product
-    status: { type: GraphQLString }, // Product status (e.g., SOLD, RENTED, etc.)
+    categories: { type: new GraphQLList(GraphQLInt) }, // Categories should be an array
+    status: { type: GraphQLString },
   }),
 });
 

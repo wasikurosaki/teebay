@@ -6,15 +6,16 @@ const {
   GraphQLFloat,
   GraphQLList,
 } = require("graphql");
-const { ProductType } = require("./type"); // Import ProductType
-const { UserType } = require("./type"); // Import UserType
+const { ProductType, UserType } = require("./type"); // Import types
+const prisma = require("../prismaClient"); // Import Prisma Client instance
+const { login } = require("../controller/userController"); // Import login function from controller
 const {
   createProduct,
   getProductById,
-  getUserProducts,
   updateProduct,
-  markProductAsSold,
-  markProductAsRented,
+  buyProduct,
+  rentProduct,
+  deleteProduct,
 } = require("../controller/productController");
 const {
   createUser,
@@ -29,7 +30,7 @@ const RootQuery = new GraphQLObjectType({
     products: {
       type: new GraphQLList(ProductType),
       resolve: async () => {
-        return await prisma.product.findMany();
+        return await prisma.product.findMany(); // Fetch all products
       },
     },
     product: {
@@ -52,7 +53,7 @@ const Mutation = new GraphQLObjectType({
     addProduct: {
       type: ProductType,
       args: {
-        title: { type: GraphQLString },
+        name: { type: GraphQLString },
         description: { type: GraphQLString },
         price: { type: GraphQLFloat },
         categories: { type: new GraphQLList(GraphQLInt) }, // Array of category IDs
@@ -60,11 +61,12 @@ const Mutation = new GraphQLObjectType({
       },
       resolve: (parent, args) => createProduct(args), // Handle product creation
     },
+
     updateProduct: {
       type: ProductType,
       args: {
         id: { type: GraphQLInt },
-        title: { type: GraphQLString },
+        name: { type: GraphQLString },
         description: { type: GraphQLString },
         price: { type: GraphQLFloat },
         categories: { type: new GraphQLList(GraphQLInt) }, // Array of category IDs
@@ -75,16 +77,36 @@ const Mutation = new GraphQLObjectType({
       type: ProductType,
       args: {
         id: { type: GraphQLInt },
+        userId: { type: GraphQLInt }, // Add userId to the arguments
       },
-      resolve: (parent, args) => markProductAsSold(args.id), // Mark product as sold
+      resolve: (parent, args) =>
+        buyProduct({ productId: args.id, userId: args.userId }), // Pass both id and userId to buyProduct
     },
+
     markProductAsRented: {
       type: ProductType,
       args: {
         id: { type: GraphQLInt },
+        userId: { type: GraphQLInt }, // Add userId to the arguments
       },
-      resolve: (parent, args) => markProductAsRented(args.id), // Mark product as rented
+      resolve: (parent, args) =>
+        rentProduct({ productId: args.id, userId: args.userId }),
     },
+
+    deleteProduct: {
+      type: ProductType,
+      args: {
+        id: { type: GraphQLInt },
+      },
+
+      resolver: async (parent, args) => {
+        const { id } = args;
+        return await deleteProduct(id);
+      },
+    },
+
+    //user segment
+
     addUser: {
       type: UserType,
       args: {
@@ -101,8 +123,37 @@ const Mutation = new GraphQLObjectType({
           args.email,
           args.password,
           args.address
-        ),
+        ), // Create user
     },
+    getUserByEmail: {
+      type: UserType,
+      args: {
+        email: { type: GraphQLString }, // Email as input argument
+      },
+      resolve: async (parent, args) => {
+        return await prisma.user.findUnique({
+          where: { email: args.email },
+        }); // Fetch user by email
+      },
+    },
+
+    login: {
+      type: GraphQLString, // The return type will be the JWT token (string)
+      args: {
+        email: { type: GraphQLString },
+        password: { type: GraphQLString },
+      },
+      resolve: async (parent, { email, password }) => {
+        try {
+          // Call the login function from userController to authenticate and get token
+          const token = await login({ email, password });
+          return token; // Return the JWT token
+        } catch (error) {
+          throw new Error(error.message); // If any error occurs, throw it
+        }
+      },
+    },
+
     updateUser: {
       type: UserType,
       args: {
@@ -119,7 +170,7 @@ const Mutation = new GraphQLObjectType({
           args.lastName,
           args.email,
           args.address
-        ),
+        ), // Update user information
     },
   },
 });

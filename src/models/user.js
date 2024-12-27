@@ -54,7 +54,7 @@ const updateUser = async (args) => {
 };
 
 // Function to authenticate user for login (for GraphQL query)
-const authenticateUser = async (args) => {
+const login = async (args) => {
   const { email, password } = args;
   try {
     const user = await prisma.user.findUnique({
@@ -76,5 +76,5 @@ module.exports = {
   createUser,
   findUserByEmail,
   updateUser,
-  authenticateUser,
+  login,
 };

@@ -3,22 +3,41 @@ const prisma = require("../prismaClient"); // Import Prisma Client instance
 // Create a new product (for GraphQL mutation)
 const createProduct = async (args) => {
   const { title, description, price, categories, userId } = args;
+
   try {
+    // First, verify that all categories exist
+    const existingCategories = await prisma.category.findMany({
+      where: {
+        id: {
+          in: categories,
+        },
+      },
+    });
+
+    if (existingCategories.length !== categories.length) {
+      throw new Error("One or more categories not found");
+    }
+
     const product = await prisma.product.create({
       data: {
-        title,
+        name: title, // Changed from 'title' to 'name' to match schema
         description,
         price,
         categories: {
           connect: categories.map((categoryId) => ({ id: categoryId })),
         },
-        userId, // Associate with the user
+        userId,
+      },
+      include: {
+        categories: true, // Include categories in the response
+        user: true, // Include user in the response
       },
     });
-    return product; // Return the created product
+
+    return product;
   } catch (error) {
     console.error("Error creating product:", error);
-    throw new Error("Unable to create product");
+    throw new Error(`Unable to create product: ${error.message}`);
   }
 };
 
@@ -78,7 +97,7 @@ const markProductAsSold = async (id) => {
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
-        status: "SOLD",
+        status: "sold",
       },
     });
     return updatedProduct;
@@ -94,7 +113,7 @@ const markProductAsRented = async (id) => {
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
-        status: "RENTED",
+        status: "rented",
       },
     });
     return updatedProduct;

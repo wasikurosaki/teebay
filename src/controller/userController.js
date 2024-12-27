@@ -23,10 +23,6 @@ const createUser = async (firstName, lastName, email, password, address) => {
   }
 };
 
-module.exports = {
-  createUser,
-};
-
 const updateUser = async (userId, firstName, lastName, email, address) => {
   try {
     const updatedUser = await prisma.user.update({
@@ -45,19 +41,43 @@ const updateUser = async (userId, firstName, lastName, email, address) => {
   }
 };
 
+const findUserByEmail = async (email) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+    return user;
+  } catch (error) {
+    console.error("Error finding user by email:", error);
+    throw new Error("Unable to find user");
+  }
+};
+const getAllUsers = async () => {
+  try {
+    const users = await prisma.user.findMany();
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error("Unable to fetch users");
+  }
+};
+
 // Login controller for GraphQL
 const login = async (args) => {
   const { email, password } = args;
 
-  // Find the user by email
-  const user = await User.findOne({ where: { email } });
+  // Find the user by email using Prisma
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
   if (!user) {
     throw new Error("User not found");
   }
 
   // Compare the password
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
+
+  if (password != user.password) {
     throw new Error("Invalid password");
   }
 
@@ -71,4 +91,10 @@ const login = async (args) => {
   return token; // Returning the JWT token
 };
 
-module.exports = { createUser, login, updateUser };
+module.exports = {
+  createUser,
+  login,
+  updateUser,
+  findUserByEmail,
+  getAllUsers,
+};
