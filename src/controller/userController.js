@@ -63,10 +63,7 @@ const getAllUsers = async () => {
 };
 
 // Login controller for GraphQL
-const login = async (args) => {
-  const { email, password } = args;
-
-  // Find the user by email using Prisma
+const login = async ({ email, password }) => {
   const user = await prisma.user.findUnique({
     where: { email },
   });
@@ -75,20 +72,17 @@ const login = async (args) => {
     throw new Error("User not found");
   }
 
-  // Compare the password
-
-  if (password != user.password) {
+  if (password !== user.password) {
     throw new Error("Invalid password");
   }
 
-  // Generate JWT token
   const token = jwt.sign(
     { userId: user.id, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
 
-  return token; // Returning the JWT token
+  return token; // Returning the JWT token as a string
 };
 
 module.exports = {
