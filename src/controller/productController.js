@@ -158,7 +158,6 @@ const rentProduct = async ({ productId, userId }) => {
 };
 const deleteProduct = async (id) => {
   try {
-    // Check if the product exists
     const product = await prisma.product.findUnique({
       where: { id },
     });
@@ -167,15 +166,14 @@ const deleteProduct = async (id) => {
       throw new Error("Product not found");
     }
 
-    // Delete the product
-    const deletedProduct = await prisma.product.delete({
+    await prisma.product.delete({
       where: { id },
     });
-    console.log("Product Deleted Successfully!");
-    return deletedProduct;
+
+    return "Product deleted successfully";
   } catch (error) {
-    console.error("Error deleting product:", error);
-    throw new Error("Unable to delete product");
+    // Throw the actual error instead of wrapping it
+    throw error;
   }
 };
 

@@ -82,7 +82,7 @@ const login = async ({ email, password }) => {
     { expiresIn: "1h" }
   );
 
-  return token; // Returning the JWT token as a string
+  return { token, userId: user.id }; // Returning both token and userId
 };
 
 module.exports = {

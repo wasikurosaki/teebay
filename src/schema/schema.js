@@ -5,6 +5,7 @@ const {
   GraphQLInt,
   GraphQLFloat,
   GraphQLList,
+  GraphQLNonNull,
 } = require("graphql");
 const { ProductType, UserType } = require("./type"); // Import types
 const prisma = require("../prismaClient"); // Import Prisma Client instance
@@ -38,7 +39,8 @@ const RootQuery = new GraphQLObjectType({
 
         return products.map((product) => ({
           ...product,
-          categories: product.categories.map((cat) => cat.id), // Return only category IDs
+          categories: product.categories.map((cat) => cat.id),
+          createdAt: product.createdAt.toISOString(), // Return only category IDs
         }));
       },
     },
@@ -108,14 +110,15 @@ const Mutation = new GraphQLObjectType({
     },
 
     deleteProduct: {
-      type: ProductType,
+      type: new GraphQLNonNull(GraphQLString), // Make it non-null
       args: {
-        id: { type: GraphQLInt },
+        id: { type: new GraphQLNonNull(GraphQLInt) }, // Make id non-null too
       },
-
-      resolver: async (parent, args) => {
+      resolve: async (parent, args) => {
+        // Note: it's 'resolve', not 'resolver'
         const { id } = args;
-        return await deleteProduct(id);
+        const result = await deleteProduct(id);
+        return result;
       },
     },
 
@@ -152,16 +155,22 @@ const Mutation = new GraphQLObjectType({
     },
 
     login: {
-      type: GraphQLString, // The return type will be the JWT token (string)
+      type: new GraphQLObjectType({
+        name: "LoginResponse",
+        fields: {
+          token: { type: GraphQLString },
+          userId: { type: GraphQLInt }, // Adjust the type based on your `userId` type
+        },
+      }),
       args: {
         email: { type: GraphQLString },
         password: { type: GraphQLString },
       },
       resolve: async (parent, { email, password }) => {
         try {
-          // Call the login function from userController to authenticate and get token
-          const token = await login({ email, password });
-          return token; // Return the JWT token
+          // Call the login function from userController to authenticate and get token and userId
+          const { token, userId } = await login({ email, password });
+          return { token, userId }; // Return both token and userId
         } catch (error) {
           throw new Error(error.message); // If any error occurs, throw it
         }

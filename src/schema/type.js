@@ -38,6 +38,8 @@ const ProductType = new GraphQLObjectType({
     price: { type: GraphQLFloat },
     categories: { type: new GraphQLList(GraphQLInt) }, // Categories should be an array
     status: { type: GraphQLString },
+    userId: { type: GraphQLInt },
+    createdAt: { type: GraphQLString },
   }),
 });
 
