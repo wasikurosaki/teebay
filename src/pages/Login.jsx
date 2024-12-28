@@ -5,7 +5,10 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate hook
 
 const LOGIN_USER = gql`
   mutation login($email: String!, $password: String!) {
-    login(email: $email, password: $password)
+    login(email: $email, password: $password) {
+      token
+      userId
+    }
   }
 `;
 
@@ -18,18 +21,24 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Send the login mutation
     try {
       const { data } = await loginUser({
         variables: { email, password },
       });
 
       if (data && data.login) {
-        console.log("Login successful. Token:", data.login);
-        localStorage.setItem("authToken", data.login); // Store the JWT token
-        navigate("/dashboard"); // Redirect to the dashboard after successful login
+        const { token, userId } = data.login;
+
+        // Store the token and userId in localStorage
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("userId", userId);
+
+        console.log("Login successful. Token:", token, "UserId:", userId);
+
+        // Redirect to the dashboard
+        navigate("/dashboard");
       } else {
-        console.error("Login failed: No token received.");
+        console.error("Login failed: No token or userId received.");
       }
     } catch (err) {
       console.error("Error during login:", err);

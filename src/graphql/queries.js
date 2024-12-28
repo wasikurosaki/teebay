@@ -9,6 +9,9 @@ export const GET_ALL_PRODUCTS = gql`
       description
       price
       categories
+      userId
+      status
+      createdAt
     }
   }
 `;
@@ -62,13 +65,7 @@ export const UPDATE_PRODUCT = gql`
 `;
 
 export const DELETE_PRODUCT = gql`
-  mutation DeleteProduct($id: Int!) {
-    deleteProduct(id: $id) {
-      id
-      name
-      description
-      price
-      categories
-    }
+  mutation deleteProduct($id: Int!) {
+    deleteProduct(id: $id)
   }
 `;
