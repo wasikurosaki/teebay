@@ -40,6 +40,11 @@ const ProductType = new GraphQLObjectType({
     status: { type: GraphQLString },
     userId: { type: GraphQLInt },
     createdAt: { type: GraphQLString },
+    rentType: { type: GraphQLString },
+    rentPrice: { type: GraphQLFloat },
+    rentStart: { type: GraphQLString },
+    rentEnd: { type: GraphQLString },
+    buyerId: { type: GraphQLInt },
   }),
 });
 

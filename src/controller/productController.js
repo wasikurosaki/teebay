@@ -9,6 +9,8 @@ const createProduct = async ({
   price,
   categories,
   userId,
+  rentPrice,
+  rentType,
 }) => {
   try {
     // Check if categories exist
@@ -30,6 +32,8 @@ const createProduct = async ({
       price,
       userId,
       categories,
+      rentPrice,
+      rentType,
     });
 
     const product = await prisma.product.create({
@@ -38,6 +42,8 @@ const createProduct = async ({
         description,
         price,
         userId,
+        rentPrice,
+        rentType,
         categories: {
           connect: categories.map((categoryId) => ({ id: categoryId })),
         },
@@ -54,6 +60,8 @@ const createProduct = async ({
       name: product.name, // Ensure you return 'name'
       description: product.description,
       price: product.price,
+      rentPrice,
+      rentType,
       categories: product.categories.map((cat) => cat.id), // Map categories to IDs
     };
   } catch (error) {
@@ -62,7 +70,15 @@ const createProduct = async ({
   }
 };
 
-const updateProduct = async ({ id, name, description, price, categories }) => {
+const updateProduct = async ({
+  id,
+  name,
+  description,
+  price,
+  categories,
+  rentPrice,
+  rentType,
+}) => {
   try {
     // Start building the update data
     const updateData = {};
@@ -70,6 +86,8 @@ const updateProduct = async ({ id, name, description, price, categories }) => {
     if (name) updateData.name = name;
     if (description) updateData.description = description;
     if (price) updateData.price = price;
+    if (rentPrice) updateData.rentPrice = rentPrice;
+    if (rentType) updateData.rentType = rentType;
 
     // If categories are provided, update the categories relationship
     if (categories) {
@@ -93,6 +111,8 @@ const updateProduct = async ({ id, name, description, price, categories }) => {
       name: updatedProduct.name,
       description: updatedProduct.description,
       price: updatedProduct.price,
+      rentPrice: updatedProduct.rentPrice,
+      rentType: updatedProduct.rentType,
       categories: updatedProduct.categories.map((cat) => cat.id), // Return category IDs
     };
   } catch (error) {
@@ -102,9 +122,10 @@ const updateProduct = async ({ id, name, description, price, categories }) => {
 };
 
 // Controller for buying a product
-const buyProduct = async ({ productId, userId }) => {
+const buyProduct = async ({ productId, userId, buyerId }) => {
   console.log("Received productId:", productId); // Check if productId is passed correctly
-  console.log("Received userId:", userId); // Check if userId is passed correctly
+  console.log("Received userId:", userId);
+  console.log("Received buyer:", buyerId); // Check if userId is passed correctly
 
   if (!productId) {
     throw new Error("Product ID is required");
@@ -122,7 +143,13 @@ const buyProduct = async ({ productId, userId }) => {
   console.log("Product makred sold");
   const updatedProduct = await prisma.product.update({
     where: { id: productId },
-    data: { status: "sold", userId },
+    data: {
+      status: "sold",
+      user: {
+        connect: { id: userId }, // Connect the user to the product using userId
+      },
+      buyerId: buyerId, // Assuming buyerId is a regular field, not a relationship
+    },
   });
 
   // Return the updated product with the relevant fields
@@ -130,12 +157,25 @@ const buyProduct = async ({ productId, userId }) => {
 };
 
 // Controller for renting a product
-const rentProduct = async ({ productId, userId }) => {
+const rentProduct = async ({
+  productId,
+  userId,
+  buyerId,
+  rentStart,
+  rentEnd,
+}) => {
   console.log("Received productId:", productId); // Check if productId is passed correctly
   console.log("Received userId:", userId); // Check if userId is passed correctly
+  console.log("Received rentStart:", rentStart); // Check if rentStart is passed correctly
+  console.log("Received rentEnd:", rentEnd);
+  console.log("Received buyerId:", buyerId); // Check if rentEnd is passed correctly
 
   if (!productId) {
     throw new Error("Product ID is required");
+  }
+
+  if (!rentStart || !rentEnd) {
+    throw new Error("Start and end dates are required");
   }
 
   const product = await prisma.product.findUnique({
@@ -146,16 +186,24 @@ const rentProduct = async ({ productId, userId }) => {
     throw new Error("Product not found");
   }
 
-  product.status = "rented";
-  console.log("Product makred as rented");
+  // Update product status and rental dates
   const updatedProduct = await prisma.product.update({
     where: { id: productId },
-    data: { status: "rented", userId },
+    data: {
+      status: "rented",
+      user: {
+        connect: { id: userId }, // Connect the user to the product using userId
+      },
+      buyerId: buyerId,
+      rentStart: new Date(rentStart), // Convert to Date object
+      rentEnd: new Date(rentEnd), // Convert to Date object
+    },
   });
 
-  // Return the updated product with the relevant fields
+  console.log("Product marked as rented");
   return updatedProduct;
 };
+
 const deleteProduct = async (id) => {
   try {
     const product = await prisma.product.findUnique({

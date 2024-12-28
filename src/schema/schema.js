@@ -40,7 +40,7 @@ const RootQuery = new GraphQLObjectType({
         return products.map((product) => ({
           ...product,
           categories: product.categories.map((cat) => cat.id),
-          createdAt: product.createdAt.toISOString(), // Return only category IDs
+          createdAt: product.createdAt.toISOString(),
         }));
       },
     },
@@ -68,6 +68,8 @@ const Mutation = new GraphQLObjectType({
         name: { type: GraphQLString },
         description: { type: GraphQLString },
         price: { type: GraphQLFloat },
+        rentPrice: { type: GraphQLFloat },
+        rentType: { type: GraphQLString },
         categories: { type: new GraphQLList(GraphQLInt) }, // Array of category IDs
         userId: { type: GraphQLInt }, // User ID who owns the product
       },
@@ -85,6 +87,8 @@ const Mutation = new GraphQLObjectType({
         name: { type: GraphQLString },
         description: { type: GraphQLString },
         price: { type: GraphQLFloat },
+        rentPrice: { type: GraphQLFloat },
+        rentType: { type: GraphQLString },
         categories: { type: new GraphQLList(GraphQLInt) }, // Array of category IDs
       },
       resolve: (parent, args) => updateProduct(args), // Handle product update
@@ -93,20 +97,35 @@ const Mutation = new GraphQLObjectType({
       type: ProductType,
       args: {
         id: { type: GraphQLInt },
-        userId: { type: GraphQLInt }, // Add userId to the arguments
+        userId: { type: GraphQLInt },
+        buyerId: { type: GraphQLInt },
       },
-      resolve: (parent, args) =>
-        buyProduct({ productId: args.id, userId: args.userId }), // Pass both id and userId to buyProduct
+      resolve: (parent, args) => {
+        console.log(args); // Log args to check if buyerId is present
+        return buyProduct({
+          productId: args.id,
+          userId: args.userId,
+          buyerId: args.buyerId,
+        });
+      },
     },
-
     markProductAsRented: {
       type: ProductType,
       args: {
         id: { type: GraphQLInt },
-        userId: { type: GraphQLInt }, // Add userId to the arguments
+        userId: { type: GraphQLInt },
+        buyerId: { type: GraphQLInt },
+        rentStart: { type: GraphQLString }, // Add rentStart as a string
+        rentEnd: { type: GraphQLString }, // Add rentEnd as a string
       },
       resolve: (parent, args) =>
-        rentProduct({ productId: args.id, userId: args.userId }),
+        rentProduct({
+          productId: args.id,
+          userId: args.userId,
+          buyerId: args.buyerId,
+          rentStart: args.rentStart,
+          rentEnd: args.rentEnd,
+        }),
     },
 
     deleteProduct: {
