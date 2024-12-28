@@ -16,6 +16,8 @@ const Dashboard = () => {
     name: "",
     description: "",
     price: 0,
+    rentPrice: 0,
+    rentType: "per hr", // Default to 'per hr'
     categories: [],
   });
 
@@ -31,18 +33,14 @@ const Dashboard = () => {
 
   const [updateProduct] = useMutation(UPDATE_PRODUCT);
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userId");
-    navigate("/login");
-  };
-
   const handleProductClick = (product) => {
     setSelectedProduct(product);
     setProductData({
       name: product.name,
       description: product.description,
       price: product.price,
+      rentPrice: product.rentPrice,
+      rentType: product.rentType || "per hr", // Set rentType if exists
       categories: product.categories || [],
     });
     setModalOpen(true);
@@ -61,6 +59,7 @@ const Dashboard = () => {
           : value,
     }));
   };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -79,6 +78,8 @@ const Dashboard = () => {
                 .map((cat) => parseInt(cat.trim()))
                 .filter((cat) => !isNaN(cat))
             : [],
+          rentPrice: parseFloat(productData.rentPrice),
+          rentType: productData.rentType, // Send rentType
         },
         update: (cache, { data: { updateProduct } }) => {
           const existingProducts = cache.readQuery({
@@ -143,17 +144,9 @@ const Dashboard = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
-  console.log(productData);
-
+  console.log(data);
   return (
     <div className="flex flex-col w-full bg-gray-100 min-h-[100vh] p-8">
-      <button
-        onClick={handleLogout}
-        className="fixed bg-red-500 text-white px-4 py-2 rounded mb-4 right-8 top-8"
-      >
-        Logout
-      </button>
-
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-center">My Products</h2>
         {data?.products?.length === 0 ? (
@@ -168,11 +161,15 @@ const Dashboard = () => {
               .map((product) => (
                 <li
                   key={product.id}
-                  className="p-4 rounded shadow-sm mb-2 border-[2px] h-auto py-10 flex flex-col gap-8"
+                  className="p-4 rounded shadow-sm mb-2 border-[2px] h-auto w-3/4 py-10 flex flex-col gap-8"
                 >
                   <h3 className="font-bold">{product?.name}</h3>
                   <p>Categories: {product.categories?.join(", ")}</p>
                   <p>Price: ${product.price.toFixed(2)}</p>
+                  <p>
+                    Rent Price: ${product.rentPrice.toFixed(2)} (
+                    {product.rentType})
+                  </p>
                   <p>{product.description}</p>
                   <p>User ID: {product.userId}</p>
                   <p>
@@ -197,25 +194,6 @@ const Dashboard = () => {
           </ul>
         )}
       </div>
-
-      <button
-        onClick={() => navigate("/createproduct")}
-        className="fixed bg-blue-500 text-white px-4 py-2 rounded mb-4 right-8 bottom-8"
-      >
-        Add Product
-      </button>
-      <button
-        onClick={() => navigate("/checkout")}
-        className="fixed bg-blue-500 text-white px-4 py-2 rounded mb-4 left-8 to-8"
-      >
-        Buy Product
-      </button>
-      <button
-        onClick={() => navigate("/allproducts")}
-        className="fixed bg-blue-500 text-white px-4 py-2 rounded mb-4 left-8 bottom-8"
-      >
-        All Products
-      </button>
 
       {modalOpen && selectedProduct && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
@@ -252,13 +230,34 @@ const Dashboard = () => {
                 />
               </div>
               <div className="mb-4">
+                <label className="block text-sm">Rent Price</label>
+                <input
+                  type="number"
+                  name="rentPrice"
+                  value={productData.rentPrice}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm">Rent Type</label>
+                <select
+                  name="rentType"
+                  value={productData.rentType}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                >
+                  <option value="per hr">Per Hour</option>
+                  <option value="per day">Per Day</option>
+                </select>
+              </div>
+              <div className="mb-4">
                 <label className="block text-sm">Categories</label>
                 <input
                   type="text"
                   name="categories"
                   value={productData.categories.join(", ")}
                   onChange={handleInputChange}
-                  placeholder="Enter category IDs separated by commas"
                   className="w-full p-2 border border-gray-300 rounded"
                 />
               </div>

@@ -26,6 +26,8 @@ const CreateProduct = () => {
     categories: [],
     description: "",
     price: "",
+    rentPrice: "",
+    rentType: "", // Add rentType to formData
   });
 
   const availableCategories = [
@@ -57,6 +59,8 @@ const CreateProduct = () => {
       categories: [],
       description: "",
       price: "",
+      rentPrice: "",
+      rentType: "", // Reset rentType as well
     });
     setCurrentStep(STEPS.TITLE);
   };
@@ -69,6 +73,8 @@ const CreateProduct = () => {
           name: formData.name,
           description: formData.description,
           price: parseFloat(formData.price),
+          rentPrice: parseFloat(formData.rentPrice), // Pass rentPrice
+          rentType: formData.rentType, // Pass rentType
           categories: formData.categories,
           userId: userId,
         },
@@ -112,6 +118,16 @@ const CreateProduct = () => {
             <p className="text-sm font-medium text-gray-500">Price</p>
             <p className="mt-1">${parseFloat(formData.price).toFixed(2)}</p>
           </div>
+
+          <div className="border-b pb-2">
+            <p className="text-sm font-medium text-gray-500">Rent Price</p>
+            <p className="mt-1">${parseFloat(formData.rentPrice).toFixed(2)}</p>
+          </div>
+
+          <div className="border-b pb-2">
+            <p className="text-sm font-medium text-gray-500">Rent Type</p>
+            <p className="mt-1">{formData.rentType}</p>
+          </div>
         </div>
       </div>
     );
@@ -123,7 +139,7 @@ const CreateProduct = () => {
         return (
           <div className="space-y-4 w-full">
             <label className="block text-sm font-medium text-gray-700">
-              Project Title
+              Product Title
             </label>
             <input
               type="text"
@@ -131,7 +147,7 @@ const CreateProduct = () => {
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              placeholder="Enter project title"
+              placeholder="Enter product title"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -185,7 +201,7 @@ const CreateProduct = () => {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              placeholder="Enter project description"
+              placeholder="Enter product description"
               className="w-full px-4 py-2 border rounded-lg min-h-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -208,6 +224,34 @@ const CreateProduct = () => {
               step="0.01"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+            <label className="block text-sm font-medium text-gray-700 mt-4">
+              Rent Price
+            </label>
+            <input
+              type="number"
+              value={formData.rentPrice}
+              onChange={(e) =>
+                setFormData({ ...formData, rentPrice: e.target.value })
+              }
+              placeholder="Enter rent price"
+              min="0"
+              step="0.01"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <label className="block text-sm font-medium text-gray-700 mt-4">
+              Rent Type
+            </label>
+            <select
+              value={formData.rentType}
+              onChange={(e) =>
+                setFormData({ ...formData, rentType: e.target.value })
+              }
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select rent type</option>
+              <option value="per day">Per Day</option>
+              <option value="per hour">Per Hour</option>
+            </select>
           </div>
         );
 
@@ -262,24 +306,19 @@ const CreateProduct = () => {
           {currentStep > STEPS.TITLE && (
             <button
               onClick={handleBack}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 bg-gray-300 text-white rounded-lg"
             >
               Back
             </button>
           )}
-          <div className="ml-auto">
-            <button
-              onClick={handleNext}
-              disabled={isNextDisabled()}
-              className={`px-4 py-2 rounded-lg ${
-                isNextDisabled()
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
-              }`}
-            >
-              {currentStep === STEPS.SUMMARY ? "Submit" : "Next"}
-            </button>
-          </div>
+
+          <button
+            onClick={handleNext}
+            disabled={isNextDisabled()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            {currentStep === STEPS.SUMMARY ? "Submit" : "Next"}
+          </button>
         </div>
       </div>
     </div>

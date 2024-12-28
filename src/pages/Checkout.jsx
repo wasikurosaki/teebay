@@ -1,13 +1,39 @@
-import React, { useState } from "react";
-import { useQuery } from "@apollo/client";
-import { GET_ALL_PRODUCTS } from "../graphql/queries";
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_ALL_PRODUCTS,
+  MARK_PRODUCT_AS_SOLD,
+  MARK_PRODUCT_AS_RENTED,
+} from "../graphql/queries";
+import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
+  const navigate = useNavigate();
+  const authToken = localStorage.getItem("authToken");
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate("/login");
+    }
+  }, [authToken, navigate]);
+
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showRentModal, setShowRentModal] = useState(false);
+  const [rentStart, setRentStart] = useState("");
+  const [rentEnd, setRentEnd] = useState("");
   const userId = localStorage.getItem("userId");
 
   const { loading, error, data } = useQuery(GET_ALL_PRODUCTS, {
     fetchPolicy: "cache-and-network",
+  });
+
+  const [markProductAsSold] = useMutation(MARK_PRODUCT_AS_SOLD, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
+  });
+
+  const [markProductAsRented] = useMutation(MARK_PRODUCT_AS_RENTED, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
   });
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
@@ -18,22 +44,138 @@ const Checkout = () => {
 
   const availableProducts =
     data?.products.filter(
-      (product) => product.userId !== userId && product.status === "Active"
+      (product) =>
+        product.userId !== parseInt(userId) && product.status !== "sold"
     ) || [];
 
-  const handleBuyProduct = (productId) => {
-    // Implement buy logic here
-    console.log("Buying product:", productId);
+  const handleBuyProduct = () => {
+    setShowBuyModal(true);
   };
 
-  const handleRentProduct = (productId) => {
-    // Implement rent logic here
-    console.log("Renting product:", productId);
+  const handleConfirmBuy = async () => {
+    try {
+      await markProductAsSold({
+        variables: {
+          id: parseInt(selectedProduct.id),
+          userId: parseInt(selectedProduct.userId),
+          buyerId: parseInt(userId),
+        },
+      });
+      setShowBuyModal(false);
+      setSelectedProduct(null);
+    } catch (err) {
+      console.error("Error marking product as sold:", err);
+    }
   };
+
+  const handleRentProduct = () => {
+    setShowRentModal(true);
+  };
+
+  const handleConfirmRent = async () => {
+    try {
+      await markProductAsRented({
+        variables: {
+          id: parseInt(selectedProduct.id),
+          userId: parseInt(selectedProduct.userId),
+          rentStart,
+          rentEnd,
+          buyerId: parseInt(userId),
+        },
+      });
+      setShowRentModal(false);
+      setRentStart("");
+      setRentEnd("");
+      setSelectedProduct(null);
+    } catch (err) {
+      console.error("Error marking product as rented:", err);
+    }
+  };
+
+  // Buy Confirmation Modal
+  const BuyModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h3 className="text-xl font-bold mb-4">Confirm Purchase</h3>
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to buy {selectedProduct.name} for $
+          {selectedProduct.price}?
+        </p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setShowBuyModal(false)}
+            className="flex-1 bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600"
+          >
+            No, Cancel
+          </button>
+          <button
+            onClick={handleConfirmBuy}
+            className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+          >
+            Yes, Buy Now
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Rent Modal
+  const RentModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h3 className="text-xl font-bold mb-4">Rent Product</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Rent Start Date
+            </label>
+            <input
+              type="date"
+              value={rentStart}
+              onChange={(e) => setRentStart(e.target.value)}
+              className="w-full border rounded-md px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Rent End Date
+            </label>
+            <input
+              type="date"
+              value={rentEnd}
+              onChange={(e) => setRentEnd(e.target.value)}
+              className="w-full border rounded-md px-3 py-2"
+            />
+          </div>
+        </div>
+        <div className="flex gap-4 mt-6">
+          <button
+            onClick={() => {
+              setShowRentModal(false);
+              setRentStart("");
+              setRentEnd("");
+            }}
+            className="flex-1 bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirmRent}
+            className="flex-1 bg-green-500 text-white py-2 rounded-md hover:bg-green-600"
+            disabled={!rentStart || !rentEnd}
+          >
+            Confirm Rent
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (selectedProduct) {
     return (
       <div className="min-h-screen bg-gray-100 p-8">
+        {showBuyModal && <BuyModal />}
+        {showRentModal && <RentModal />}
         <button
           onClick={() => setSelectedProduct(null)}
           className="mb-6 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
@@ -55,13 +197,13 @@ const Checkout = () => {
 
           <div className="flex gap-4 mt-8">
             <button
-              onClick={() => handleBuyProduct(selectedProduct.id)}
+              onClick={handleBuyProduct}
               className="flex-1 bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600"
             >
               Buy Product
             </button>
             <button
-              onClick={() => handleRentProduct(selectedProduct.id)}
+              onClick={handleRentProduct}
               className="flex-1 bg-green-500 text-white py-3 rounded-md hover:bg-green-600"
             >
               Rent Product
