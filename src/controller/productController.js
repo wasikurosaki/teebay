@@ -187,33 +187,26 @@ const rentProduct = async ({
     throw new Error("Product not found");
   }
 
-  // Check if the new rentStart date is later than the existing rentEnd date
-  if (
-    product.rentStart &&
-    product.rentEnd &&
-    ((rentStart >= new Date(product.rentStart) &&
-      rentStart <= new Date(product.rentEnd)) || // Overlaps with the start of the current rental period
-      (rentEnd >= new Date(product.rentStart) &&
-        rentEnd <= new Date(product.rentEnd)) || // Overlaps with the end of the current rental period
-      (rentStart <= new Date(product.rentStart) &&
-        rentEnd >= new Date(product.rentEnd))) // Completely overlaps the current rental period
-  ) {
+  const hasConflict =
+    new Date(rentStart).getTime() < new Date(product.rentEnd).getTime() &&
+    new Date(rentEnd).getTime() > new Date(product.rentStart).getTime();
+
+  if (hasConflict) {
     throw new Error(
-      `The product is already rented from ${product.rentStart} to ${product.rentEnd}. Please choose a different time period.`
+      `The product is already rented from ${product.startDate} to ${product.endDate}. Please choose a different time period.`
     );
   }
 
-  // Update product status and rental dates
   const updatedProduct = await prisma.product.update({
     where: { id: productId },
     data: {
       status: "rented",
       user: {
-        connect: { id: userId }, // Connect the user to the product using userId
+        connect: { id: userId },
       },
       buyerId: buyerId,
-      rentStart: new Date(rentStart), // Convert to Date object
-      rentEnd: new Date(rentEnd), // Convert to Date object
+      rentStart: new Date(rentStart),
+      rentEnd: new Date(rentEnd),
     },
   });
 
