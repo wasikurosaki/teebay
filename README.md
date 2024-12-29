@@ -1,70 +1,186 @@
-# Getting Started with Create React App
+# 🛍️ Product Rental & Sales Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 🌟 Features
 
-## Available Scripts
+- 👤 User authentication with JWT
+- 🏷️ Product listing and management
+- 💰 Purchase products
+- ⏰ Rental system with time frame validation
 
-In the project directory, you can run:
+## 🔧 Tech Stack
 
-### `npm start`
+- Backend:
+  - Node.js
+  - GraphQL
+  - PostgreSQL
+  - Prisma
+- Frontend:
+  - React
+  - Apollo Client
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🚀 Getting Started
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Prerequisites
 
-### `npm test`
+- Node.js
+- PostgreSQL
+- npm
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Environment Variables
 
-### `npm run build`
+Create a `.env` file in the root directory:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```env
+DATABASE_URL=postgresql://<username>:<password>@<host>:<port>/<database>
+JWT_SECRET=<your_secret_key>
+PORT=3000
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Backend Setup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Install dependencies:
 
-### `npm run eject`
+```bash
+npm install
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. Generate Prisma client:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npx prisma generate
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. Deploy database migrations:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npx prisma migrate deploy
+```
 
-## Learn More
+4. Start development server:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm run dev
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Frontend Setup
 
-### Code Splitting
+1. Install dependencies:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+npm install
+```
 
-### Analyzing the Bundle Size
+2. Start frontend server:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+npm start
+```
 
-### Making a Progressive Web App
+## 📚 API Documentation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### User Endpoints
 
-### Advanced Configuration
+#### 🔐 Signup
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```graphql
+POST localhost:3000/graphql
+{
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  address: String!
+}
+```
 
-### Deployment
+#### 🔑 Login
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```graphql
+POST localhost:3000/graphql
+{
+  email: String!
+  password: String!
+}
+```
 
-### `npm run build` fails to minify
+### Product Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+#### 📝 Create Product
+
+```graphql
+POST localhost:3000/graphql
+{
+  name: String!
+  description: String!
+  price: Float!
+  categories: [Int!]!
+  userId: Int!
+  rentPrice: Float!
+  rentType: String!
+}
+```
+
+#### 🔄 Update Product
+
+```graphql
+PUT localhost:3000/graphql
+{
+  id: Int!
+  name: String
+  description: String
+  price: Float
+  categories: [Int!]
+  rentPrice: Float
+  rentType: String
+}
+```
+
+#### 💳 Buy Product
+
+```graphql
+POST localhost:3000/graphql
+{
+  id: Int!
+  userId: Int!
+  buyerId: Int!
+}
+```
+
+#### 📅 Rent Product
+
+```graphql
+POST localhost:3000/graphql
+{
+  id: Int!
+  userId: Int!
+  rentStart: String!
+  rentEnd: String!
+  buyerId: Int!
+}
+```
+
+## 🔒 Authentication
+
+All protected routes require JWT authentication. Add the token to your request headers:
+
+```
+Authorization: Bearer <your_token>
+```
+
+## 👨‍💻 My Experience
+
+This project was a great learning experience for me as I got to work with some new technologies. I started by designing the database using PostgreSQL and Prisma, which was a fun and insightful process. Once the database structure was ready, I moved on to creating the resolvers and controllers. Implementing the login and signup functionality was straightforward, and I didn't face any major hurdles there.
+
+After completing all the APIs, I tested them thoroughly using Postman to ensure they worked as expected. Once I had the backend foundation ready, I began working on the frontend. To be honest, I didn't focus much on the design aspect. Looking back, there are plenty of ways I could have improved the UI, but I decided to concentrate more on ensuring the features and functionality worked smoothly.
+
+One corner case of the project was handling a specific corner case for the "rent product" feature. The challenge was to check the rental period to make sure that a product couldn't be rented by someone else during an overlapping time frame. I solved this by adding the necessary checks and logic in the rent product controller, which felt rewarding once it was working perfectly.
+
+Overall, it was a fulfilling experience, and I'm happy with how I was able to tackle the tasks while learning along the way. There's definitely room for improvement, but I feel I've grown a lot through this project!
+
+## 🎨 Future Improvements
+
+- Enhanced UI/UX design
+- Advanced search filters
+- User reviews and ratings
+- Payment gateway integration
+- Real-time notifications
