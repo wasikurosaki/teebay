@@ -23,6 +23,12 @@ const Checkout = () => {
   const [rentStart, setRentStart] = useState("");
   const [rentEnd, setRentEnd] = useState("");
   const userId = localStorage.getItem("userId");
+  const availableCategories = [
+    { id: 1, label: "Electronics" },
+    { id: 2, label: "Clothing" },
+    { id: 3, label: "Books" },
+    { id: 4, label: "Home & Garden" },
+  ];
 
   const { loading, error, data } = useQuery(GET_ALL_PRODUCTS, {
     fetchPolicy: "cache-and-network",
@@ -88,6 +94,7 @@ const Checkout = () => {
       setRentEnd("");
       setSelectedProduct(null);
     } catch (err) {
+      alert("Sorry! Already Booked For the Give Date!");
       console.error("Error marking product as rented:", err);
     }
   };
@@ -190,21 +197,18 @@ const Checkout = () => {
             <p className="text-2xl font-semibold mb-2">
               Price: ${selectedProduct.price}
             </p>
-            <p className="text-gray-600">
-              Categories: {selectedProduct.categories.join(", ")}
-            </p>
           </div>
 
           <div className="flex gap-4 mt-8">
             <button
               onClick={handleBuyProduct}
-              className="flex-1 bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600"
+              className="flex-1 bg-purple-900 text-white py-3 rounded-md hover:bg-blue-600"
             >
               Buy Product
             </button>
             <button
               onClick={handleRentProduct}
-              className="flex-1 bg-green-500 text-white py-3 rounded-md hover:bg-green-600"
+              className="flex-1 bg-purple-900 text-white py-3 rounded-md hover:bg-green-600"
             >
               Rent Product
             </button>
@@ -235,9 +239,18 @@ const Checkout = () => {
               </p>
               <p className="text-lg font-semibold">Price: ${product.price}</p>
               <div className="mt-2">
-                <span className="text-sm text-gray-500">
-                  Categories: {product.categories.join(", ")}
-                </span>
+                <p>
+                  Categories:{" "}
+                  {product.categories
+                    ?.map((categoryId) => {
+                      const category = availableCategories.find(
+                        (cat) => cat.id === categoryId
+                      );
+                      return category ? category.label : null; // Return label if found, otherwise null
+                    })
+                    .filter((label) => label !== null) // Remove nulls in case of invalid IDs
+                    .join(", ")}
+                </p>
               </div>
             </div>
           ))}

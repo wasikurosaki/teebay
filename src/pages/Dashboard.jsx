@@ -20,6 +20,12 @@ const Dashboard = () => {
     rentType: "per hr", // Default to 'per hr'
     categories: [],
   });
+  const availableCategories = [
+    { id: 1, label: "Electronics" },
+    { id: 2, label: "Clothing" },
+    { id: 3, label: "Books" },
+    { id: 4, label: "Home & Garden" },
+  ];
 
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
 
@@ -164,16 +170,35 @@ const Dashboard = () => {
                   className="p-4 rounded shadow-sm mb-2 border-[2px] h-auto w-3/4 py-10 flex flex-col gap-8"
                 >
                   <h3 className="font-bold">{product?.name}</h3>
-                  <p>Categories: {product.categories?.join(", ")}</p>
+                  <p>
+                    Categories:{" "}
+                    {product.categories
+                      ?.map((categoryId) => {
+                        const category = availableCategories.find(
+                          (cat) => cat.id === categoryId
+                        );
+                        return category ? category.label : null; // Return label if found, otherwise null
+                      })
+                      .filter((label) => label !== null) // Remove nulls in case of invalid IDs
+                      .join(", ")}
+                  </p>
                   <p>Price: ${product.price.toFixed(2)}</p>
                   <p>
                     Rent Price: ${product.rentPrice.toFixed(2)} (
                     {product.rentType})
                   </p>
                   <p>{product.description}</p>
-                  <p>User ID: {product.userId}</p>
+                  {/* <p>User ID: {product.userId}</p> */}
                   <p>
-                    Created At: {new Date(product.createdAt).toLocaleString()}
+                    Date Posted:{" "}
+                    {`${new Date(product.createdAt).toLocaleDateString(
+                      "en-US",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )}`}
                   </p>
                   <div className="flex gap-4">
                     <button

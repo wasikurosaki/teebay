@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { ApolloClient, InMemoryCache } from "@apollo/client";
-import { GET_ALL_PRODUCTS } from "../graphql/queries";
+import { GET_ALL_PRODUCTS, GET_INACTIVE_PRODUCTS } from "../graphql/queries";
 
 const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
-        products: {
+        products_inactive: {
           merge(existing = [], incoming) {
             return incoming; // Replace the entire array with new data
           },
@@ -37,24 +37,48 @@ const TabButton = ({ isActive, label, onClick }) => (
   </button>
 );
 
-const ProductCard = ({ product }) => (
-  <div
-    key={product.id}
-    className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-  >
-    <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-    <p className="text-gray-600 mb-2">{product.description}</p>
-    <p className="text-lg font-semibold">Price: ${product.price}</p>
-    <div className="mt-2">
-      <span className="text-sm text-gray-500">Status: {product.status}</span>
+const ProductCard = ({ product }) => {
+  const availableCategories = [
+    { id: 1, label: "Electronics" },
+    { id: 2, label: "Clothing" },
+    { id: 3, label: "Books" },
+    { id: 4, label: "Home & Garden" },
+  ];
+
+  return (
+    <div
+      key={product.id}
+      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+    >
+      <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+      <p className="text-gray-600 mb-2">{product.description}</p>
+      <p className="text-lg font-semibold">Price: ${product.price}</p>
+
+      <div className="mt-2">
+        <p>
+          Categories:{" "}
+          {product.categories
+            ?.map((categoryId) => {
+              const category = availableCategories.find(
+                (cat) => cat.id === categoryId
+              );
+              return category ? category.label : null; // Return label if found, otherwise null
+            })
+            .filter((label) => label !== null) // Remove nulls in case of invalid IDs
+            .join(", ")}
+        </p>
+      </div>
+      <p className="mt-4 text-gray-400">
+        Date Posted:{" "}
+        {`${new Date(product.createdAt).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`}
+      </p>
     </div>
-    <div className="mt-2">
-      <span className="text-sm text-gray-500">
-        Categories: {product.categories.join(", ")}
-      </span>
-    </div>
-  </div>
-);
+  );
+};
 
 const AllProducts = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -62,7 +86,7 @@ const AllProducts = () => {
   const userId = parseInt(localStorage.getItem("userId"));
   const navigate = useNavigate();
 
-  const { loading, error, data } = useQuery(GET_ALL_PRODUCTS, {
+  const { loading, error, data } = useQuery(GET_INACTIVE_PRODUCTS, {
     fetchPolicy: "cache-and-network", // Show cached data first, then update from network
   });
 
@@ -73,28 +97,28 @@ const AllProducts = () => {
   }, [authToken, navigate]);
 
   const filterProducts = () => {
-    console.log(data.products);
-    if (!data?.products) return [];
+    console.log(data?.products_inactive);
+    if (!data?.products_inactive) return [];
 
     switch (activeTab) {
       case "sold":
-        return data.products.filter(
+        return data.products_inactive.filter(
           (product) => product.status === "sold" && product.userId === userId
         );
       case "bought":
-        return data.products.filter(
+        return data.products_inactive.filter(
           (product) => product.status === "sold" && product.buyerId === userId
         );
       case "lent":
-        return data.products.filter(
+        return data.products_inactive.filter(
           (product) => product.status === "rented" && product.userId === userId
         );
       case "rent":
-        return data.products.filter(
+        return data.products_inactive.filter(
           (product) => product.status === "rented" && product.buyerId === userId
         );
       default:
-        return data.products;
+        return data.products_inactive;
     }
   };
 
@@ -105,6 +129,12 @@ const AllProducts = () => {
     return (
       <div className="text-center p-4 text-red-500">Error: {error.message}</div>
     );
+  const availableCategories = [
+    { id: 1, label: "Electronics" },
+    { id: 2, label: "Clothing" },
+    { id: 3, label: "Books" },
+    { id: 4, label: "Home & Garden" },
+  ];
 
   return (
     <div className="min-h-screen">

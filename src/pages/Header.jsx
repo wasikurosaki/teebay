@@ -11,7 +11,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-blue-600 text-white p-4 flex justify-between items-center px-10">
+    <header className="bg-gray-800 text-white p-4 flex justify-between items-center px-10">
       <div className="text-xl font-bold">
         <Link to="/dashboard" className="hover:text-gray-200">
           teeBay
@@ -28,7 +28,7 @@ const Header = () => {
           All Products
         </Link>
         <Link to="/checkout" className="hover:text-gray-200">
-          Checkout
+          Buy or Rent
         </Link>
 
         {authToken && (

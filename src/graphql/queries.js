@@ -123,3 +123,22 @@ export const MARK_PRODUCT_AS_RENTED = gql`
     }
   }
 `;
+export const GET_INACTIVE_PRODUCTS = gql`
+  query {
+    products_inactive {
+      id
+      name
+      description
+      price
+      rentPrice
+      categories
+      userId
+      status
+      createdAt
+      rentType
+      buyerId
+      rentStart
+      rentEnd
+    }
+  }
+`;
