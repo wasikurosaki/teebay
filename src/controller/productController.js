@@ -167,8 +167,8 @@ const rentProduct = async ({
   console.log("Received productId:", productId); // Check if productId is passed correctly
   console.log("Received userId:", userId); // Check if userId is passed correctly
   console.log("Received rentStart:", rentStart); // Check if rentStart is passed correctly
-  console.log("Received rentEnd:", rentEnd);
-  console.log("Received buyerId:", buyerId); // Check if rentEnd is passed correctly
+  console.log("Received rentEnd:", rentEnd); // Check if rentEnd is passed correctly
+  console.log("Received buyerId:", buyerId); // Check if buyerId is passed correctly
 
   if (!productId) {
     throw new Error("Product ID is required");
@@ -178,12 +178,29 @@ const rentProduct = async ({
     throw new Error("Start and end dates are required");
   }
 
+  // Fetch the product from the database
   const product = await prisma.product.findUnique({
     where: { id: productId },
   });
 
   if (!product) {
     throw new Error("Product not found");
+  }
+
+  // Check if the new rentStart date is later than the existing rentEnd date
+  if (
+    product.rentStart &&
+    product.rentEnd &&
+    ((rentStart >= new Date(product.rentStart) &&
+      rentStart <= new Date(product.rentEnd)) || // Overlaps with the start of the current rental period
+      (rentEnd >= new Date(product.rentStart) &&
+        rentEnd <= new Date(product.rentEnd)) || // Overlaps with the end of the current rental period
+      (rentStart <= new Date(product.rentStart) &&
+        rentEnd >= new Date(product.rentEnd))) // Completely overlaps the current rental period
+  ) {
+    throw new Error(
+      `The product is already rented from ${product.rentStart} to ${product.rentEnd}. Please choose a different time period.`
+    );
   }
 
   // Update product status and rental dates

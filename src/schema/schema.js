@@ -44,6 +44,27 @@ const RootQuery = new GraphQLObjectType({
         }));
       },
     },
+    products_inactive: {
+      type: new GraphQLList(ProductType),
+      resolve: async () => {
+        const products = await prisma.product.findMany({
+          where: {
+            status: {
+              not: "Active", // Filter products where status is not 'active'
+            },
+          },
+          include: {
+            categories: true, // Include categories for each product
+          },
+        });
+
+        return products.map((product) => ({
+          ...product,
+          categories: product.categories.map((cat) => cat.id),
+          createdAt: product.createdAt.toISOString(),
+        }));
+      },
+    },
 
     product: {
       type: ProductType,
