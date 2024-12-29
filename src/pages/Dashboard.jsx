@@ -29,7 +29,6 @@ const Dashboard = () => {
 
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
 
-  // Check if the user is authenticated
   const authToken = localStorage.getItem("authToken");
   useEffect(() => {
     if (!authToken) {
@@ -46,7 +45,7 @@ const Dashboard = () => {
       description: product.description,
       price: product.price,
       rentPrice: product.rentPrice,
-      rentType: product.rentType || "per hr", // Set rentType if exists
+      rentType: product.rentType || "per hr",
       categories: product.categories || [],
     });
     setModalOpen(true);
@@ -85,7 +84,7 @@ const Dashboard = () => {
                 .filter((cat) => !isNaN(cat))
             : [],
           rentPrice: parseFloat(productData.rentPrice),
-          rentType: productData.rentType, // Send rentType
+          rentType: productData.rentType,
         },
         update: (cache, { data: { updateProduct } }) => {
           const existingProducts = cache.readQuery({
@@ -98,8 +97,8 @@ const Dashboard = () => {
                 ? {
                     ...product,
                     ...updateProduct,
-                    userId: product.userId, // Preserve the userId
-                    createdAt: product.createdAt, // Preserve the createdAt
+                    userId: product.userId,
+                    createdAt: product.createdAt,
                   }
                 : product
             );
@@ -177,9 +176,9 @@ const Dashboard = () => {
                         const category = availableCategories.find(
                           (cat) => cat.id === categoryId
                         );
-                        return category ? category.label : null; // Return label if found, otherwise null
+                        return category ? category.label : null;
                       })
-                      .filter((label) => label !== null) // Remove nulls in case of invalid IDs
+                      .filter((label) => label !== null)
                       .join(", ")}
                   </p>
                   <p>Price: ${product.price.toFixed(2)}</p>

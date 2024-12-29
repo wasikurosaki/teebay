@@ -99,7 +99,6 @@ const Checkout = () => {
     }
   };
 
-  // Buy Confirmation Modal
   const BuyModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
@@ -126,7 +125,6 @@ const Checkout = () => {
     </div>
   );
 
-  // Rent Modal
   const RentModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
@@ -246,9 +244,9 @@ const Checkout = () => {
                       const category = availableCategories.find(
                         (cat) => cat.id === categoryId
                       );
-                      return category ? category.label : null; // Return label if found, otherwise null
+                      return category ? category.label : null;
                     })
-                    .filter((label) => label !== null) // Remove nulls in case of invalid IDs
+                    .filter((label) => label !== null)
                     .join(", ")}
                 </p>
               </div>

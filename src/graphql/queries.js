@@ -142,3 +142,35 @@ export const GET_INACTIVE_PRODUCTS = gql`
     }
   }
 `;
+
+export const LOGIN_USER = gql`
+  mutation login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      token
+      userId
+    }
+  }
+`;
+
+export const ADD_USER = gql`
+  mutation AddUser(
+    $firstName: String!
+    $lastName: String!
+    $email: String!
+    $password: String!
+    $address: String!
+  ) {
+    addUser(
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+      password: $password
+      address: $address
+    ) {
+      firstName
+      lastName
+      email
+      address
+    }
+  }
+`;

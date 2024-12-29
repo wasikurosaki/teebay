@@ -10,13 +10,13 @@ const cache = new InMemoryCache({
       fields: {
         products_inactive: {
           merge(existing = [], incoming) {
-            return incoming; // Replace the entire array with new data
+            return incoming;
           },
         },
       },
     },
     Product: {
-      keyFields: ["id"], // Use id as the primary key for Product type
+      keyFields: ["id"],
     },
   },
 });

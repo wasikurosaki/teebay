@@ -27,7 +27,7 @@ const CreateProduct = () => {
     description: "",
     price: "",
     rentPrice: "",
-    rentType: "", // Add rentType to formData
+    rentType: "",
   });
 
   const availableCategories = [
@@ -60,7 +60,7 @@ const CreateProduct = () => {
       description: "",
       price: "",
       rentPrice: "",
-      rentType: "", // Reset rentType as well
+      rentType: "",
     });
     setCurrentStep(STEPS.TITLE);
   };
@@ -73,8 +73,8 @@ const CreateProduct = () => {
           name: formData.name,
           description: formData.description,
           price: parseFloat(formData.price),
-          rentPrice: parseFloat(formData.rentPrice), // Pass rentPrice
-          rentType: formData.rentType, // Pass rentType
+          rentPrice: parseFloat(formData.rentPrice),
+          rentType: formData.rentType,
           categories: formData.categories,
           userId: userId,
         },

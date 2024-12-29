@@ -2,29 +2,7 @@ import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { gql } from "graphql-tag";
 import { useNavigate } from "react-router-dom";
-// GraphQL mutation for adding a user
-const ADD_USER = gql`
-  mutation AddUser(
-    $firstName: String!
-    $lastName: String!
-    $email: String!
-    $password: String!
-    $address: String!
-  ) {
-    addUser(
-      firstName: $firstName
-      lastName: $lastName
-      email: $email
-      password: $password
-      address: $address
-    ) {
-      firstName
-      lastName
-      email
-      address
-    }
-  }
-`;
+import { ADD_USER } from "../graphql/queries";
 
 const SignUp = () => {
   const navigate = useNavigate();

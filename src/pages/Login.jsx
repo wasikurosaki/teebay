@@ -1,16 +1,8 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { gql } from "graphql-tag";
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
-
-const LOGIN_USER = gql`
-  mutation login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
-      token
-      userId
-    }
-  }
-`;
+import { useNavigate } from "react-router-dom";
+import { LOGIN_USER } from "../graphql/queries";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -29,13 +21,11 @@ const Login = () => {
       if (data && data.login) {
         const { token, userId } = data.login;
 
-        // Store the token and userId in localStorage
         localStorage.setItem("authToken", token);
         localStorage.setItem("userId", userId);
 
         console.log("Login successful. Token:", token, "UserId:", userId);
 
-        // Redirect to the dashboard
         navigate("/dashboard");
       } else {
         console.error("Login failed: No token or userId received.");
