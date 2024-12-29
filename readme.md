@@ -1,7 +1,5 @@
 # 🛍️ Product Rental & Sales Platform
 
-A full-stack application for buying and renting products with user authentication.
-
 ## 🌟 Features
 
 - 👤 User authentication with JWT
@@ -169,17 +167,13 @@ All protected routes require JWT authentication. Add the token to your request h
 Authorization: Bearer <your_token>
 ```
 
-## 💡 Developer Notes
-
-This project implements a robust rental validation system that prevents double-booking of products during overlapping time periods. The backend validates rental requests against existing bookings to ensure availability.
-
 ## 👨‍💻 My Experience
 
 This project was a great learning experience for me as I got to work with some new technologies. I started by designing the database using PostgreSQL and Prisma, which was a fun and insightful process. Once the database structure was ready, I moved on to creating the resolvers and controllers. Implementing the login and signup functionality was straightforward, and I didn't face any major hurdles there.
 
 After completing all the APIs, I tested them thoroughly using Postman to ensure they worked as expected. Once I had the backend foundation ready, I began working on the frontend. To be honest, I didn't focus much on the design aspect. Looking back, there are plenty of ways I could have improved the UI, but I decided to concentrate more on ensuring the features and functionality worked smoothly.
 
-One tricky part of the project was handling a specific corner case for the "rent product" feature. The challenge was to check the rental period to make sure that a product couldn't be rented by someone else during an overlapping time frame. I solved this by adding the necessary checks and logic in the rent product controller, which felt rewarding once it was working perfectly.
+One corner case of the project was handling a specific corner case for the "rent product" feature. The challenge was to check the rental period to make sure that a product couldn't be rented by someone else during an overlapping time frame. I solved this by adding the necessary checks and logic in the rent product controller, which felt rewarding once it was working perfectly.
 
 Overall, it was a fulfilling experience, and I'm happy with how I was able to tackle the tasks while learning along the way. There's definitely room for improvement, but I feel I've grown a lot through this project!
 
